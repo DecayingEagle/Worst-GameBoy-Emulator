@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 int DisassembleGBOp(unsigned char* codebuffer, int pc) {
 	unsigned char *code = &codebuffer[pc];
@@ -614,6 +615,8 @@ typedef struct StateCPU {
     uint16_t    sp;
     uint16_t    pc;
     uint8_t* memory;
+    bool sysClkActive;
+    bool mainClkActive;
     struct      ConditionCodes      cc;
 } StateCPU;
 
@@ -631,39 +634,33 @@ int EmulateGBOp(StateCPU* state)
 
     switch (*opcode)
     {
-    case 0x00: break; //nop
-    case 0x01: { //ld bc, d16
+    case 0x00: break; // nop
+    case 0x01: { // ld bc,d16
         state->bc = ((opcode[2]<<8)|opcode[1]);
         cycles = 3;
         break;
     }
-    case 0x02: { // ld (bc), a
+    case 0x02: { // ld (bc),a
         state->memory[state->bc] = state->a;
         cycles = 2;
         break;
     }
     case 0x03: { // inc bc
-        state->bc += 1;
+        uint32_t answer = (uint32_t)state->bc + 1;
+        state->bc = (answer & 0xffff);
         cycles = 2;
         break;
     }
     case 0x04: { // inc b
-        state->b += 1;
-        if (state->b == 0) {
-            state->cc.z = 1;
-        } else {
-            state->cc.z = 0;
-        }
+        uint16_t answer = (uint16_t)state->b + 1;
+        state->cc.z = ((answer ^ 0x0) == 0);
         state->cc.n = 0;
-        if (state->b = 0xf) {
-            state->cc.h = 1;
-        } else {
-            state->cc.h = 0;
-        }
+        state->cc.h = ((answer & 0x8) != 0);
+        state->b = (answer & 0xff);
         break;
     }
     case 0x05: { // dec b
-        uint16_t answer = state->b - 1;
+        uint16_t answer = (uint16_t)state->b - 1;
         state->cc.z = ((answer ^ 0x0) == 0);
         state->cc.n = 1;
         state->cc.h = ((answer & 0xf) != 0);
@@ -676,13 +673,20 @@ int EmulateGBOp(StateCPU* state)
         break;
     }
     case 0x07: { // rlca
-        break; //! i need to understand this shit
+        uint16_t answer = ((uint16_t)state->a<<1);
+        state->cc.z = ((answer ^ 0x0) == 0);
+        state->cc.n = 0;
+        state->cc.h = 0;
+        state->cc.c = ((answer & 0x100) == 0x100);
+        state->a = (answer & 0xff);
+        break;
     }
     case 0x08: { // ld (d16),sp
         state->memory[(opcode[1]<<8)|opcode[2]] = state->sp;
         cycles = 5;
+        break;
     }
-    case 0x09: { // add hl, bc
+    case 0x09: { // add hl,bc
         uint32_t answer = (uint32_t)state->hl + (uint32_t)state->bc;
         state->cc.n = 0;
         state->cc.h = ((answer & 0x1000) != 0);
@@ -691,8 +695,196 @@ int EmulateGBOp(StateCPU* state)
         cycles = 2;
         break;
     }
-    case 0x0a: {
-        
+    case 0x0a: { // ld a,(bc)
+        state->a = state->memory[state->bc];
+        cycles = 2;
+        break;
+    }
+    case 0x0b: { // dec bc
+        uint32_t answer = (uint32_t)state->bc - 1;
+        state->bc = (answer & 0xffff);
+        cycles = 2;
+        break;
+    }
+    case 0x0c: { // inc c
+        uint16_t answer = (uint16_t)state->c + 1;
+        state->cc.z = ((answer ^ 0x0) == 0);
+        state->cc.n = 0;
+        state->cc.h = ((answer & 0x8) != 0);
+        state->c = (answer & 0xff);
+        break;
+    }
+    case 0x0d: { // dec c
+        uint16_t answer = (uint16_t)state->c - 1;
+        state->cc.z = ((answer ^ 0x0) == 0);
+        state->cc.n = 1;
+        state->cc.h = ((answer & 0xf) != 0);
+        state->c = (answer & 0xff);
+        break;
+    }
+    case 0x0e: { // ld c,d8
+        state->c = opcode[1];
+        cycles = 2;
+        break;
+    }
+    case 0x0f: { // rrca
+        uint16_t answer = ((uint16_t)state->a>>1);
+        state->cc.z = ((answer ^ 0x0) == 0);
+        state->cc.n = 0;
+        state->cc.h = 0;
+        state->cc.c = ((answer & 0x100) == 0x100);
+        state->a = (answer & 0xff);
+        break;
+    }
+
+    case 0x10: { // stop 
+        UnimplementedInstruction(state); //TODO:when i implement IO 
+        // sysClkActive = 0;
+        // mainClkActive = 0;
+        // if io then {
+        //    sysClkActive = 1;
+        //    mainClkActive = 1;
+        //}
+        break;
+    }
+    case 0x11: { // ld de,d16
+        state->de = ((opcode[2]<<8)|opcode[1]);
+        cycles = 3;
+        break;
+    }
+    case 0x12: { // ld (de),a
+        state->memory[state->de] = state->a;
+        cycles = 2;
+        break;
+    }
+    case 0x13: { // inc de
+        uint32_t answer = (uint32_t)state->de + 1;
+        state->de = (answer & 0xffff);
+        cycles = 2;
+        break;
+    }
+    case 0x14: { // inc d
+        uint16_t answer = (uint16_t)state->d + 1;
+        state->cc.z = ((answer ^ 0x0) == 0);
+        state->cc.n = 0;
+        state->cc.h = ((answer & 0x8) != 0);
+        state->d = (answer & 0xff);
+        break;
+    }
+    case 0x15: { // dec d
+        uint16_t answer = (uint16_t)state->d - 1;
+        state->cc.z = ((answer ^ 0x0) == 0);
+        state->cc.n = 1;
+        state->cc.h = ((answer & 0xf) != 0);
+        state->d = (answer & 0xff);
+        break;
+    }
+    case 0x16: { // ld d,d8
+        state->d = opcode[1];
+        cycles = 2;
+        break;
+    }
+    case 0x17: { // rla  //! might be different from rlca
+        uint16_t answer = ((uint16_t)state->a<<1);
+        state->cc.z = ((answer ^ 0x0) == 0);
+        state->cc.n = 0;
+        state->cc.h = 0;
+        state->cc.c = ((answer & 0x100) == 0x100);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x18: { // jr r8
+        state->pc += opcode[1];
+        break;
+    }
+    case 0x19: { // add hl,de
+        uint32_t answer = (uint32_t)state->hl + (uint32_t)state->de;
+        state->cc.n = 0;
+        state->cc.h = ((answer & 0x1000) != 0);
+        state->cc.c = ((answer & 0xffff) == 0);
+        state->hl = (answer & 0xffff);
+        cycles = 2;
+        break;
+    }
+    case 0x1a: { // ld a,(de)
+        state->a = state->memory[state->de];
+        cycles = 2;
+        break;
+    }
+    case 0x1b: { // dec de
+        uint32_t answer = (uint32_t)state->de - 1;
+        state->de = (answer & 0xffff);
+        cycles = 2;
+        break;
+    }
+    case 0x1c: { // inc e
+        uint16_t answer = (uint16_t)state->e + 1;
+        state->cc.z = ((answer ^ 0x0) == 0);
+        state->cc.n = 0;
+        state->cc.h = ((answer & 0x8) != 0);
+        state->e = (answer & 0xff);
+        break;
+    }
+    case 0x1d: { // dec e
+        uint16_t answer = (uint16_t)state->e - 1;
+        state->cc.z = ((answer ^ 0x0) == 0);
+        state->cc.n = 1;
+        state->cc.h = ((answer & 0xf) != 0);
+        state->e = (answer & 0xff);
+        break;
+    }
+    case 0x1e: { // ld e,d8
+        state->e = opcode[1];
+        cycles = 2;
+        break;
+    }
+    case 0x1f: { // rra //! might be different from rrca
+        uint16_t answer = ((uint16_t)state->a>>1);
+        state->cc.z = ((answer ^ 0x0) == 0);
+        state->cc.n = 0;
+        state->cc.h = 0;
+        state->cc.c = ((answer & 0x100) == 0x100);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x20: { // jr nz,r8
+        if(!(state->cc.z)){
+            state->pc += opcode[1];
+            cycles = 3;
+            break;
+        } else {
+            cycles = 2;
+            break;
+        }
+    }
+    case 0x21: { // ld hl,d16
+        state->hl = ((opcode[2]<<8)|opcode[1]);
+        cycles = 3;
+        break;
+    }
+    case 0x22: { //TODO: ld (hl+),d16 mnemonic: ld a,(hli) or ldi a,(hl)
+        UnimplementedInstruction(state);
+    }
+    case 0x24: { // inc h
+        uint16_t answer = (uint16_t)state->h + 1;
+        state->cc.z = ((answer ^ 0x0) == 0);
+        state->cc.n = 0;
+        state->cc.h = ((answer & 0x8) != 0);
+        state->h = (answer & 0xff);
+        break;
+    }
+    case 0x25: { // dec h
+        uint16_t answer = (uint16_t)state->h - 1;
+        state->cc.z = ((answer ^ 0x0) == 0);
+        state->cc.n = 1;
+        state->cc.h = ((answer & 0xf) != 0);
+        state->h = (answer & 0xff);
+        break;
+    }
+    case 0x26: { // ld h,d8
+        state->h = opcode[1];
+        cycles = 2;
+        break;
     }
     default: {
         UnimplementedInstruction(state);
