@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 int DisassembleGBOp(unsigned char* codebuffer, int pc) {
 	unsigned char *code = &codebuffer[pc];
@@ -224,9 +225,8 @@ int DisassembleGBOp(unsigned char* codebuffer, int pc) {
     case 0xc9: printf("ret"); break;
     case 0xca: printf("jp z,#$%02x%02x", code[2], code[1]); opbytes = 3; break;
     case 0xcb: 
-        printf("CBPREFIX "); opbytes = 3;
-        *code = &codebuffer[pc+2];
-        switch (*code)
+        printf("CBPREFIX "); opbytes = 2;
+        switch (code[1])
         {
         case 0x00: printf("rlc b"); break;
         case 0x01: printf("rlc c"); break;
@@ -565,6 +565,97 @@ int DisassembleGBOp(unsigned char* codebuffer, int pc) {
     printf("\n");
 
     return opbytes;
+}
+
+typedef struct ConditionCodes {
+    char    z : 1;
+    char    n : 1;
+    char    h : 1;
+    char    c : 1;
+} ConditionCodes;
+
+typedef struct StateCPU {
+    uint8_t    a;
+    uint8_t    f;
+    uint8_t    b;
+    uint8_t    c;
+    uint8_t    d;
+    uint8_t    e;
+    uint8_t    h;
+    uint8_t    l;
+    uint16_t    sp;
+    uint16_t    pc;
+    uint8_t* memory;
+    struct      ConditionCodes      cc;
+} StateCPU;
+
+void UnimplementedInstruction(StateCPU* state)
+{
+    //pc will have advanced one, so undo that    
+    printf("Error: Unimplemented instruction\n");
+    exit(1);
+}
+
+int EmulateGBOp(StateCPU* state)
+{
+    unsigned char* opcode = &state->memory[state->pc];
+    int cycles = 1;
+
+    switch (*opcode)
+    {
+    case 0x00: break; //nop
+    case 0x01: { //ld bc, d16
+        state->c = opcode[1];
+        state->b = opcode[2];
+        cycles = 3;
+        break;
+    }
+    case 0x02: { // ld (bc), a
+        state->memory[state->b + state->c] = state->a;
+        cycles = 2;
+        break;
+    }
+    case 0x03: { // inc bc
+        state->c += 1; //! fix
+        cycles = 2;
+        break;
+    }
+    case 0x04: { // inc b
+        state->b += 1;
+        if (state->b == 0) {
+            state->cc.z = 1;
+        }
+        state->cc.n = 0;
+        if (state->b = 0xf) {
+            state->cc.h = 1;
+        }
+        break;
+    }
+    case 0x05: { // dec b
+        state->b -= 1;
+        if (state->b == 0) {
+            state->cc.z = 1;
+        }
+        state->cc.n = 1;
+        if (state->b = 0xf) {
+            state->cc.h = 1;
+        }
+        break;
+    }
+    case 0x06: { // ld b,d8
+        state->b = opcode[1];
+        cycles = 2;
+        break;
+    }
+    case 0x07: {
+        break;
+    }
+    default: {
+        UnimplementedInstruction(state);
+    }
+    }
+
+    state->pc += 1;  //for the opcode    
 }
 
 int main(int argc, char** argv) {
