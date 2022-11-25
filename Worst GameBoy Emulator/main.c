@@ -886,6 +886,20 @@ int EmulateGBOp(StateCPU* state)
         cycles = 2;
         break;
     }
+    case 0x27: { // daa
+        UnimplementedInstruction(state);
+        break;
+    }
+    case 0x28: { // jr z,d8
+        if(state->cc.z){
+            state->pc += opcode[1];
+            cycles = 3;
+            break;
+        } else {
+            cycles = 2;
+            break;
+        }
+    }
     default: {
         UnimplementedInstruction(state);
     }
