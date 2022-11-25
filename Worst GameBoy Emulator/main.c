@@ -575,14 +575,42 @@ typedef struct ConditionCodes {
 } ConditionCodes;
 
 typedef struct StateCPU {
-    uint8_t    a;
-    uint8_t    f;
-    uint8_t    b;
-    uint8_t    c;
-    uint8_t    d;
-    uint8_t    e;
-    uint8_t    h;
-    uint8_t    l;
+    struct {
+		union {
+			struct {
+				uint8_t f;
+				uint8_t a;
+			};
+			uint16_t af;
+		};
+	};
+	struct {
+		union {
+			struct {
+				uint8_t c;
+				uint8_t b;
+			};
+			uint16_t bc;
+		};
+	};
+	struct {
+		union {
+			struct {
+				uint8_t e;
+				uint8_t d;
+			};
+			uint16_t de;
+		};
+	};
+	struct {
+		union {
+			struct {
+				uint8_t l;
+				uint8_t h;
+			};
+			uint16_t hl;
+		};
+	};
     uint16_t    sp;
     uint16_t    pc;
     uint8_t* memory;
@@ -605,18 +633,17 @@ int EmulateGBOp(StateCPU* state)
     {
     case 0x00: break; //nop
     case 0x01: { //ld bc, d16
-        state->c = opcode[1];
-        state->b = opcode[2];
+        state->bc = ((opcode[2]<<8)|opcode[1]);
         cycles = 3;
         break;
     }
     case 0x02: { // ld (bc), a
-        state->memory[state->b + state->c] = state->a;
+        state->memory[state->bc] = state->a;
         cycles = 2;
         break;
     }
     case 0x03: { // inc bc
-        state->c += 1; //! fix
+        state->bc += 1;
         cycles = 2;
         break;
     }
@@ -624,22 +651,23 @@ int EmulateGBOp(StateCPU* state)
         state->b += 1;
         if (state->b == 0) {
             state->cc.z = 1;
+        } else {
+            state->cc.z = 0;
         }
         state->cc.n = 0;
         if (state->b = 0xf) {
             state->cc.h = 1;
+        } else {
+            state->cc.h = 0;
         }
         break;
     }
     case 0x05: { // dec b
-        state->b -= 1;
-        if (state->b == 0) {
-            state->cc.z = 1;
-        }
+        uint16_t answer = state->b - 1;
+        state->cc.z = ((answer ^ 0x0) == 0);
         state->cc.n = 1;
-        if (state->b = 0xf) {
-            state->cc.h = 1;
-        }
+        state->cc.h = ((answer & 0xf) =! 0);
+        state->b = (answer & 0xff);
         break;
     }
     case 0x06: { // ld b,d8
@@ -647,8 +675,24 @@ int EmulateGBOp(StateCPU* state)
         cycles = 2;
         break;
     }
-    case 0x07: {
+    case 0x07: { // rlca
+        break; //! i need to understand this shit
+    }
+    case 0x08: { // ld (d16),sp
+        state->memory[(opcode[1]<<8)|opcode[2]] = state->sp;
+        cycles = 5;
+    }
+    case 0x09: { // add hl, bc
+        uint32_t answer = (uint32_t)state->hl + (uint32_t)state->bc;
+        state->cc.n = 0;
+        state->cc.h = ((answer & 0x1000) != 0);
+        state->cc.c = ((answer & 0xffff) == 0);
+        state->hl = (answer & 0xffff);
+        cycles = 2;
         break;
+    }
+    case 0x0a: {
+        
     }
     default: {
         UnimplementedInstruction(state);
