@@ -666,7 +666,7 @@ int EmulateGBOp(StateCPU* state)
         uint16_t answer = state->b - 1;
         state->cc.z = ((answer ^ 0x0) == 0);
         state->cc.n = 1;
-        state->cc.h = ((answer & 0xf) =! 0);
+        state->cc.h = ((answer & 0xf) != 0);
         state->b = (answer & 0xff);
         break;
     }
