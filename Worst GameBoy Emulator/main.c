@@ -886,7 +886,7 @@ int EmulateGBOp(StateCPU* state)
         cycles = 2;
         break;
     }
-    case 0x27: { // daa
+    case 0x27: { //TODO daa 
         UnimplementedInstruction(state);
         break;
     }
@@ -909,7 +909,7 @@ int EmulateGBOp(StateCPU* state)
         cycles = 2;
         break;
     }
-    case 0x2a: { // ld a,[hl+] //TODO
+    case 0x2a: { //TODO ld a,[hl+] mnemonic: ld a,(hli) or ldi a,(hl)
         UnimplementedInstruction(state);
         cycles = 2;
         break;
