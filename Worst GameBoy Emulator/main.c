@@ -900,8 +900,37 @@ int EmulateGBOp(StateCPU* state)
             break;
         }
     }
+    case 0x29: { // add hl,hl
+        uint32_t answer = (uint32_t)state->hl + (uint32_t)state->hl;
+        state->cc.n = 0;
+        state->cc.h = ((answer & 0x1000 != 0));
+        state->cc.c = ((answer & 0xffff == 0));
+        state->hl = (answer & 0xffff);
+        cycles = 2;
+        break;
+    }
+    case 0x2a: { // ld a,[hl+] //TODO
+        UnimplementedInstruction(state);
+        cycles = 2;
+        break;
+    }
+    case 0x2b: { // dec hl
+        uint32_t answer = (uint32_t)state->hl - 1;
+        state->hl = (answer && 0xffff);
+        cycles = 2;
+        break;
+    }
+    case 0x2c: { // inc l
+        uint16_t answer = (uint16_t)state->l + 1;
+        state->cc.z = ((answer ^ 0x0) == 0);
+        state->cc.n = 0;
+        state->cc.h = ((answer & 0xf) != 0);
+        state->l = (answer & 0xff);
+    }
+
     default: {
         UnimplementedInstruction(state);
+        break;
     }
     }
 

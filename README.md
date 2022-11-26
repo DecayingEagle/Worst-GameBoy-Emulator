@@ -8,3 +8,5 @@ My goals are:
   <li>Make it easy to make romhacks</li>
   <li>Maybe an gb asm to c interpreter</li>
 </ol>
+
+I have added testing roms from https://github.com/c-sp/age-test-roms by c-sp, later on I will remove them and add my own.
