@@ -968,6 +968,20 @@ int EmulateGBOp(StateCPU* state)
         UnimplementedInstruction(state);
         break;
     }
+    case 0x33: { // inc sp
+        state->sp + 1;
+        cycles = 2;
+        break;
+    }
+    case 0x34: { // inc hl
+        state->hl + 1;
+        cycles = 3;
+        break;
+    }
+    case 0x35: { // dec hl
+        state->hl - 1;
+
+               }
     case 0x41: { // ld b,c
         state->b = state->c;
         break;
@@ -995,6 +1009,7 @@ int EmulateGBOp(StateCPU* state)
         state->f.n = 0;
         state->f.h = ((answer & 0x10) != 0);
         state->f.c = ((answer & 0xff) == 0);
+        
         state->a = (answer & 0xff);
         break;
     }
