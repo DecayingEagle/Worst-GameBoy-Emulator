@@ -927,7 +927,20 @@ int EmulateGBOp(StateCPU* state)
         state->cc.h = ((answer & 0xf) != 0);
         state->l = (answer & 0xff);
     }
-
+    case 0x2d: { // dec l
+        uint16_t answer = (uint16_t)state-> - 1;
+        state->cc.z = ((answer ^ 0x0) == 0);
+        state->cc.n = 1;
+        state->cc.h = ((answer & 0xf) != 0);
+        state->l = (answer & 0xff);
+    }
+    case 0x2e: {
+        state->l = opcode[1];
+        cycles = 2;
+    }
+    case 0x2f: {
+                 
+               }
     default: {
         UnimplementedInstruction(state);
         break;
