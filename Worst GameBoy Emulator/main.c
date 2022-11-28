@@ -569,10 +569,10 @@ int DisassembleGBOp(unsigned char* codebuffer, int pc) {
 }
 
 typedef struct ConditionFlags {
-    unsigned    z : 7;
-    unsigned    n : 6;
-    unsigned    h : 5;
-    unsigned    c : 4;
+    unsigned    z : 1;
+    unsigned    n : 1;
+    unsigned    h : 1;
+    unsigned    c : 1;
 } ConditionCodes;
 
 typedef struct StateCPU {
@@ -969,23 +969,118 @@ int EmulateGBOp(StateCPU* state)
         break;
     }
     case 0x33: { // inc sp
-        state->sp + 1;
+        state->sp += 1;
         cycles = 2;
         break;
     }
-    case 0x34: { // inc hl
-        state->hl + 1;
+    case 0x34: { // inc [hl]
+        state->hl += 1;
+        state->f.z = ((answer ^ 0xffff) == 0);
+        state->f.n = 0;
+        state->f.h = ((answer & 0x1000) != 0);
         cycles = 3;
         break;
     }
-    case 0x35: { // dec hl
-        state->hl - 1;
+    case 0x35: { // dec [hl]
+        state->hl -= 1;
+        state->f.z = ((answer ^ 0xffff) == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0x1000) != 0);
+        cycles = 3;
+        break;
+    }
+    case 0x36: { // ld [hl],d8
+        state->hl = opcode[1];
+        cycles = 3;
+        break;
+    }
+    case 0x37: { // scf
+        state->f.n = 0;
+        state->f.h = 0;
+        state->f.c = 1;
+        break;
+    }
+    case 0x38: { // jr c,pc+r8
+        if(state->f.c){
+            state->pc += opcode[1];
+            cycles = 3;
+            break;
+        } else {
+            cycles = 2;
+            break;
+        }
+    }
+    case 0x39: { // add hl,sp
+        uint32_t answer = (uint32_t)state->hl + (uint32_t)state->sp;
+        state->f.n = 0;
+        state->f.h = ((answer & 0x1000) != 0);
+        state->f.c = ((answer & 0xffff) == 0);
+        state->hl = (answer & 0xffff);
+        cycles = 2;
+        break;
+    } 
+    case 0x3a: { //TODO ld a,[hl-] mnemonic:ld a,(hld) or ldd a,(hl)
+        UnimplementedInstruction(state);
+        cycles = 2;
+        break;
+    }
+    case 0x3b: { // dec sp
+        state->sp -= 1;
+        cycles = 2;
+        break;
+    }
+     case 0x3c: { // inc a
+        uint16_t answer = (uint16_t)state->a + 1;
+        state->f.z = ((answer ^ 0x0) == 0);
+        state->f.n = 0;
+        state->f.h = ((answer & 0x8) != 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x3d: { // dec a
+        uint16_t answer = (uint16_t)state->a - 1;
+        state->f.z = ((answer ^ 0x0) == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0xf) != 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x3e: { // ld a,d8
+        state->a = opcode[1];
+        cycles = 2;
+        break;
+    }
+    case 0x3f: { // ccf
+        state->f.c ^= 0b1;
+        break;
+    }
 
-               }
+    case 0x40: { // ld b,b = nop
+        break;
+    }
     case 0x41: { // ld b,c
         state->b = state->c;
         break;
     }
+    case 0x42: { // ld b,d
+        state->b = state->d;
+        break;
+    }
+    case 0x43: { // ld b,e
+        state->b = state->e;
+        break;
+    }
+    case 0x44: { // ld b,h
+        state->b = state->h;
+        break;
+    }
+    case 0x45: { // ld b,l
+        state->b = state->l;
+        break;
+    }
+    case 0x46: { // ld b,[hl]
+
+               }
     case 0x47: { // ld b,a
         state->b = state->a;
         break;
