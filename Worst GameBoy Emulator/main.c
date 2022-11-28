@@ -974,6 +974,7 @@ int EmulateGBOp(StateCPU* state)
         break;
     }
     case 0x34: { // inc [hl]
+        uint32_t answer = state->hl + 1;
         state->hl += 1;
         state->f.z = ((answer ^ 0xffff) == 0);
         state->f.n = 0;
@@ -982,6 +983,7 @@ int EmulateGBOp(StateCPU* state)
         break;
     }
     case 0x35: { // dec [hl]
+        uint32_t answer = state->hl - 1;
         state->hl -= 1;
         state->f.z = ((answer ^ 0xffff) == 0);
         state->f.n = 1;
@@ -1079,8 +1081,10 @@ int EmulateGBOp(StateCPU* state)
         break;
     }
     case 0x46: { // ld b,[hl]
-
-               }
+        state->b = state->memory[state->hl];
+        cycles = 2;
+        break;
+    }
     case 0x47: { // ld b,a
         state->b = state->a;
         break;
@@ -1089,6 +1093,232 @@ int EmulateGBOp(StateCPU* state)
         state->c = state->b;
         break;
     }
+    case 0x49: { // ld c,c = nop
+        break;
+    }
+    case 0x4a: { // ld c,d
+        state->c = state->d;
+        break;
+    }
+    case 0x4b: { // ld c,e
+        state->c = state->e;
+        break;
+    }
+    case 0x4c: { // ld c,h
+        state->c = state->h;
+        break;
+    }
+    case 0x4d: { // ld c,l
+        state->c = state->l;
+        break;
+    }
+    case 0x4e: { // ld c,[hl]
+        state->c = state->memory[state->hl];
+        cycles = 2;
+        break;
+    }
+    case 0x4f: { // ld c,a
+        state->c = state->a;
+        break;
+    }
+
+    case 0x50: { // ld d,b
+        state->d = state->b;
+        break;
+    }
+    case 0x51: { // ld d,c
+        state->d = state->c;
+        break;
+    }
+    case 0x52: { // ld d,d = nop
+        break;
+    }
+    case 0x53: { // ld d,e
+        state->d = state->e;
+        break;
+    }
+    case 0x54: { // ld d,h
+        state->d = state->h;
+        break;
+    }
+    case 0x55: { // ld d,l
+        state->d = state->l;
+        break;
+    }
+    case 0x56: { // ld d,[hl]
+        state->d = state->memory[state->hl];
+        cycles = 2;
+        break;
+    }
+    case 0x57: { // ld d,a
+        state->d = state->a;
+        break;
+    }
+    case 0x58: { // ld e,b
+        state->e = state->b;
+        break;
+    }
+    case 0x59: {// ld e,c
+        state->e = state->c;
+        break;
+    }
+    case 0x5a: { // ld e,d
+        state->e = state->d;
+        break;
+    }
+    case 0x5b: { // ld e,e = nop
+        break;
+    }
+    case 0x5c: { // ld e,h
+        state->e = state->h;
+        break;
+    }
+    case 0x5d: { // ld e,l
+        state->e = state->l;
+        break;
+    }
+    case 0x5e: { // ld e,[hl]
+        state->e = state->memory[state->hl];
+        cycles = 2;
+        break;
+    }
+    case 0x5f: { // ld e,a
+        state->e = state->a;
+        break;
+    }
+
+    case 0x60: { // ld h,b
+        state->h = state->b;
+        break;
+    }
+    case 0x61: { // ld h,c
+        state->h = state->c;
+        break;
+    }
+    case 0x62: { // ld h,d
+        state->h = state->d;
+        break;
+    }
+    case 0x63: { // ld h,e
+        state->h = state->e;
+        break;
+    }
+    case 0x64: { // ld h,h = nop
+        break;
+    }
+    case 0x65: { // ld h,l
+        state->h = state->l;
+        break;
+    }
+    case 0x66: { // ld h,[hl]
+        state->h = state->memory[state->hl];
+        cycles = 2;
+        break;
+    }
+    case 0x67: { // ld h,a
+        state->h = state->a;
+        break;
+    }
+    case 0x68: { // ld l,b
+        state->l = state->b;
+        break;
+    }
+    case 0x69: {// ld l,c
+        state->l = state->c;
+        break;
+    }
+    case 0x6a: { // ld l,d
+        state->l = state->d;
+        break;
+    }
+    case 0x6b: { // ld l,e
+        state->l = state->e;
+        break;
+    }
+    case 0x6c: { // ld l,h
+        state->l = state->h;
+        break;
+    }
+    case 0x6d: { // ld l,l = nop
+        break;
+    }
+    case 0x6e: { // ld l,[hl]
+        state->l = state->memory[state->hl];
+        cycles = 2;
+        break;
+    }
+    case 0x6f: { // ld l,a
+        state->l = state->a;
+        break;
+    }
+
+    case 0x70: { // ld [hl],b
+        state->memory[state->hl] = state->b;
+        break;
+    }
+    case 0x71: { // ld [hl],c
+        state->memory[state->hl] = state->c;
+        break;
+    }
+    case 0x72: { // ld [hl],d
+        state->memory[state->hl] = state->d;
+        break;
+    }
+    case 0x73: { // ld [hl],e
+        state->memory[state->hl] = state->e;
+        break;
+    }
+    case 0x74: { // ld [hl],h
+        state->memory[state->hl] = state->h;
+        break;
+    }
+    case 0x75: { // ld [hl],l
+        state->memory[state->hl] = state->l;
+        break;
+    }
+    case 0x76: { //TODO halt // expl: Power down CPU until an interrupt occurs. Use this when ever possible to reduce energy consumption.
+        state->sysClkActive = false;
+        //until interrupt
+        break;
+    }
+    case 0x77: { // ld [hl],a
+        state->memory[state->hl] = state->a;
+        break;
+    }
+    case 0x78: { // ld a,b
+        state->a = state->b;
+        break;
+    }
+    case 0x79: {// ld a,c
+        state->a = state->c;
+        break;
+    }
+    case 0x7a: { // ld a,d
+        state->a = state->d;
+        break;
+    }
+    case 0x7b: { // ld a,e
+        state->a = state->e;
+        break;
+    }
+    case 0x7c: { // ld a,h
+        state->a = state->h;
+        break;
+    }
+    case 0x7d: { // ld a,l
+        state->a = state->l;
+        break;
+    }
+    case 0x7e: { // ld a,[hl]
+        state->a = state->memory[state->hl];
+        cycles = 2;
+        break;
+    }
+    case 0x7f: { // ld a,a = nop
+        break;
+    }
+
+
     case 0x80: { // add a,b
         uint16_t answer = (uint16_t)state->a + (uint16_t)state->b;
         state->f.z = (answer == 0);
