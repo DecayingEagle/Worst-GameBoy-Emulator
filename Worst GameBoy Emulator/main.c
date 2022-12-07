@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_DEPRECATE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -575,7 +574,7 @@ typedef struct ConditionFlags {
     unsigned    c : 1;
 } ConditionCodes;
 
-typedef struct StateCPU {
+typedef struct StateGB {
     struct {
 		union {
 			struct {
@@ -615,21 +614,21 @@ typedef struct StateCPU {
     uint16_t    sp;
     uint16_t    pc;
     uint8_t* memory;
+    uint8_t* ram;
     bool sysClkActive;
     bool mainClkActive;
-} StateCPU;
+} StateGB;
 
-void UnimplementedInstruction(StateCPU* state)
+void UnimplementedInstruction(StateGB* state)
 {
     //pc will have advanced one, so undo that
     state->pc--;
     printf("Error: Unimplemented instruction\n");
-    return;
 }
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "cppcoreguidelines-narrowing-conversions"
-int EmulateGBOp(StateCPU* state)
+int EmulateGBOp(StateGB* state)
 {
     unsigned char* opcode = &state->memory[state->pc];
     DisassembleGBOp(state->memory, state->pc);
@@ -1334,10 +1333,279 @@ int EmulateGBOp(StateCPU* state)
         state->f.n = 0;
         state->f.h = ((answer & 0x10) != 0);
         state->f.c = ((answer & 0xff) == 0);
-        
         state->a = (answer & 0xff);
         break;
     }
+    case 0x82: { // add a,d
+        uint16_t answer = (uint16_t)state->a + (uint16_t)state->d;
+        state->f.z = (answer == 0);
+        state->f.n = 0;
+        state->f.h = ((answer & 0x10) != 0);
+        state->f.c = ((answer & 0xff) == 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x83: { // add a,e
+        uint16_t answer = (uint16_t)state->a + (uint16_t)state->e;
+        state->f.z = (answer == 0);
+        state->f.n = 0;
+        state->f.h = ((answer & 0x10) != 0);
+        state->f.c = ((answer & 0xff) == 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x84: { // add a,h
+        uint16_t answer = (uint16_t)state->a + (uint16_t)state->h;
+        state->f.z = (answer == 0);
+        state->f.n = 0;
+        state->f.h = ((answer & 0x10) != 0);
+        state->f.c = ((answer & 0xff) == 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x85: { // add a,l
+        uint16_t answer = (uint16_t)state->a + (uint16_t)state->l;
+        state->f.z = (answer == 0);
+        state->f.n = 0;
+        state->f.h = ((answer & 0x10) != 0);
+        state->f.c = ((answer & 0xff) == 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x86: { // add a,[hl]
+        uint16_t answer = (uint16_t)state->a + (uint16_t)state->memory[state->hl];
+        state->f.z = (answer == 0);
+        state->f.n = 0;
+        state->f.h = ((answer & 0x10) != 0);
+        state->f.c = ((answer & 0xff) == 0);
+        state->a = (answer & 0xff);
+        cycles = 2;
+        break;
+    }
+    case 0x87: { // add a,a nop?
+        break;
+    }
+    case 0x88: { // adc a,b
+        uint16_t answer = (uint16_t)state->a + (uint16_t)state->b + (uint16_t)state->f.c;
+        state->f.z = (answer == 0);
+        state->f.n = 0;
+        state->f.h = ((answer & 0x10) != 0);
+        state->f.c = ((answer & 0xff) == 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x89: { // adc a,c
+        uint16_t answer = (uint16_t)state->a + (uint16_t)state->c + (uint16_t)state->f.c;
+        state->f.z = (answer == 0);
+        state->f.n = 0;
+        state->f.h = ((answer & 0x10) != 0);
+        state->f.c = ((answer & 0xff) == 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x8a: { // adc a,d
+        uint16_t answer = (uint16_t)state->a + (uint16_t)state->d + (uint16_t)state->f.c;
+        state->f.z = (answer == 0);
+        state->f.n = 0;
+        state->f.h = ((answer & 0x10) != 0);
+        state->f.c = ((answer & 0xff) == 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x8b: { // adc a,e
+        uint16_t answer = (uint16_t)state->a + (uint16_t)state->e + (uint16_t)state->f.c;
+        state->f.z = (answer == 0);
+        state->f.n = 0;
+        state->f.h = ((answer & 0x10) != 0);
+        state->f.c = ((answer & 0xff) == 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x8c: { // adc a,h
+        uint16_t answer = (uint16_t)state->a + (uint16_t)state->h + (uint16_t)state->f.c;
+        state->f.z = (answer == 0);
+        state->f.n = 0;
+        state->f.h = ((answer & 0x10) != 0);
+        state->f.c = ((answer & 0xff) == 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x8d: { // adc a,l
+        uint16_t answer = (uint16_t)state->a + (uint16_t)state->l + (uint16_t)state->f.c;
+        state->f.z = (answer == 0);
+        state->f.n = 0;
+        state->f.h = ((answer & 0x10) != 0);
+        state->f.c = ((answer & 0xff) == 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x8e: { // adc a,[hl]
+        uint16_t answer = (uint16_t)state->a + (uint16_t)state->memory[state->hl] + (uint16_t)state->f.c;
+        state->f.z = (answer == 0);
+        state->f.n = 0;
+        state->f.h = ((answer & 0x10) != 0);
+        state->f.c = ((answer & 0xff) == 0);
+        state->a = (answer & 0xff);
+        cycles = 2;
+        break;
+    }
+    case 0x8f: { // adc a,a
+        uint16_t answer = (uint16_t)state->a + (uint16_t)state->a + (uint16_t)state->f.c;
+        state->f.z = (answer == 0);
+        state->f.n = 0;
+        state->f.h = ((answer & 0x10) != 0);
+        state->f.c = ((answer & 0xff) == 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+
+    case 0x90: { // sub b
+        uint16_t answer = (uint16_t)state->a - (uint16_t)state->b;
+        state->f.z = (answer == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer & 0xff) != 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x91: { // sub c
+        uint16_t answer = (uint16_t)state->a - (uint16_t)state->c;
+        state->f.z = (answer == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer & 0xff) != 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x92: { // sub d
+        uint16_t answer = (uint16_t)state->a - (uint16_t)state->d;
+        state->f.z = (answer == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer & 0xff) != 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x93: { // sub e
+        uint16_t answer = (uint16_t)state->a - (uint16_t)state->e;
+        state->f.z = (answer == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer & 0xff) != 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x94: { // sub h
+        uint16_t answer = (uint16_t)state->a - (uint16_t)state->h;
+        state->f.z = (answer == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer & 0xff) != 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x95: { // sub l
+        uint16_t answer = (uint16_t)state->a - (uint16_t)state->l;
+        state->f.z = (answer == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer & 0xff) != 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x96: { // sub [hl]
+        uint16_t answer = (uint16_t)state->a - (uint16_t)state->memory[state->hl];
+        state->f.z = (answer == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer & 0xff) != 0);
+        state->a = (answer & 0xff);
+        cycles = 2;
+        break;
+    }
+    case 0x97: { // sub a
+        uint16_t answer = (uint16_t)state->a - (uint16_t)state->a;
+        state->f.z = (answer == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer & 0xff) != 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x98: { // sbc a,b
+        uint16_t answer = (uint16_t)state->a - (uint16_t)state->b + (uint16_t)state->f.c;
+        state->f.z = (answer == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer & 0xff) != 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x99: { // sbc a,c
+        uint16_t answer = (uint16_t)state->a - (uint16_t)state->c + (uint16_t)state->f.c;
+        state->f.z = (answer == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer & 0xff) != 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x9a: { // sbc a,d
+        uint16_t answer = (uint16_t)state->a - (uint16_t)state->d + (uint16_t)state->f.c;
+        state->f.z = (answer == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer & 0xff) != 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x9b: { // sbc a,e
+        uint16_t answer = (uint16_t)state->a - (uint16_t)state->e + (uint16_t)state->f.c;
+        state->f.z = (answer == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer & 0xff) != 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x9c: { // sbc a,h
+        uint16_t answer = (uint16_t)state->a - (uint16_t)state->h + (uint16_t)state->f.c;
+        state->f.z = (answer == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer & 0xff) != 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x9d: { // sbc a,l
+        uint16_t answer = (uint16_t)state->a - (uint16_t)state->l + (uint16_t)state->f.c;
+        state->f.z = (answer == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer & 0xff) != 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+    case 0x9e: { // sbc a,[hl]
+        uint16_t answer = (uint16_t)state->a - (uint16_t)state->memory[state->hl] + (uint16_t)state->f.c;
+        state->f.z = (answer == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer & 0xff) != 0);
+        state->a = (answer & 0xff);
+        cycles = 2;
+        break;
+    }
+    case 0x9f: { // sbc a,a
+        uint16_t answer = (uint16_t)state->a - (uint16_t)state->a + (uint16_t)state->f.c;
+        state->f.z = (answer == 0);
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer & 0xff) != 0);
+        state->a = (answer & 0xff);
+        break;
+    }
+
     case 0xc3: { // jp a16
         state->pc = ((opcode[2]<<8)|opcode[1]);
         cycles = 4;
@@ -1356,15 +1624,15 @@ int EmulateGBOp(StateCPU* state)
 }
 #pragma clang diagnostic pop
 
-StateCPU* InitCPU(void){
-    StateCPU* state = calloc(1, sizeof(StateCPU));
+StateGB* InitCPU(void){
+    StateGB* state = calloc(1, sizeof(StateGB));
     state->pc = 0;
-    state->memory = malloc(0x10000); //TODO: make it read the size of the rom
+    state->memory = malloc(0xfffff); //TODO: make it read the size of the rom
     return state;
 }
 
 
-void ReadFileIntoMemoryAt(StateCPU* state, char* filename)
+void ReadFileIntoMemoryAt(StateGB* state, char* filename)
 {
     FILE *f= fopen(filename, "rb");
     if (f==NULL)
@@ -1380,12 +1648,13 @@ void ReadFileIntoMemoryAt(StateCPU* state, char* filename)
     fread(buffer, fsize, 1, f);
     fclose(f);
     state->memory = buffer;
+    state->ram = malloc(0xffff);
 }
 
 int main(int argc, char** argv) {
 
     int done = 0;
-    StateCPU* state = InitCPU();
+    StateGB* state = InitCPU();
     ReadFileIntoMemoryAt(state, argv[1]);
 
     while (done == 0)
