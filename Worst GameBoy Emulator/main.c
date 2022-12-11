@@ -572,7 +572,7 @@ typedef struct ConditionFlags {
     unsigned    n : 1;
     unsigned    h : 1;
     unsigned    c : 1;
-} ConditionCodes;
+} ConditionFlags;
 
 typedef struct StateGB {
     struct {
@@ -1605,6 +1605,296 @@ int EmulateGBOp(StateGB* state)
         state->a = (answer & 0xff);
         break;
     }
+
+    case 0xa0: { // and b
+        state->a = state->a & state->b;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 1;
+        state->f.c = 0;
+        break;
+    }
+    case 0xa1: { // and c
+        state->a = state->a & state->c;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 1;
+        state->f.c = 0;
+        break;
+    }
+    case 0xa2: { // and d
+        state->a = state->a & state->d;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 1;
+        state->f.c = 0;
+        break;
+    }
+    case 0xa3: { // and e
+        state->a = state->a & state->e;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 1;
+        state->f.c = 0;
+        break;
+    }
+    case 0xa4: { // and h
+        state->a = state->a & state->h;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 1;
+        state->f.c = 0;
+        break;
+    }
+    case 0xa5: { // and l
+        state->a = state->a & state->l;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 1;
+        state->f.c = 0;
+        break;
+    }
+    case 0xa6: { // and [hl]
+        state->a = state->a & state->memory[state->hl];
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 1;
+        state->f.c = 0;
+        cycles = 2;
+        break;
+    }
+    case 0xa7: { // and a
+        state->a = state->a ;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 1;
+        state->f.c = 0;
+        break;
+    }
+    case 0xa8: { // xor b
+        state->a = state->a ^ state->b;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 0;
+        state->f.c = 0;
+        break;
+    }
+    case 0xa9: { // xor c
+        state->a = state->a ^ state->c;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 0;
+        state->f.c = 0;
+        break;
+    }
+    case 0xaa: { // xor d
+        state->a = state->a ^ state->d;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 0;
+        state->f.c = 0;
+        break;
+    }
+    case 0xab: { // xor e
+        state->a = state->a ^ state->e;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 0;
+        state->f.c = 0;
+        break;
+    }
+    case 0xac: { // xor h
+        state->a = state->a ^ state->h;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 0;
+        state->f.c = 0;
+        break;
+    }
+    case 0xad: { // xor l
+        state->a = state->a ^ state->l;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 0;
+        state->f.c = 0;
+        break;
+    }
+    case 0xae: { // xor [hl]
+        state->a = state->a ^ state->memory[state->hl];
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 0;
+        state->f.c = 0;
+        cycles = 2;
+        break;
+    }
+    case 0xaf: { // xor a
+        state->a = 0;
+        state->f.z = 1;
+        state->f.h = 0;
+        state->f.h = 0;
+        state->f.c = 0;
+        break;
+    }
+
+    case 0xb0: { // or b
+        state->a = state->a | state->b;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 0;
+        state->f.c = 0;
+        break;
+    }
+    case 0xb1: { // or c
+        state->a = state->a | state->c;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 0;
+        state->f.c = 0;
+        break;
+    }
+    case 0xb2: { // or d
+        state->a = state->a | state->d;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 0;
+        state->f.c = 0;
+        break;
+    }
+    case 0xb3: { // or e
+        state->a = state->a | state->e;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 0;
+        state->f.c = 0;
+        break;
+    }
+    case 0xb4: { // or h
+        state->a = state->a | state->h;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 0;
+        state->f.c = 0;
+        break;
+    }
+    case 0xb5: { // or l
+        state->a = state->a | state->l;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 0;
+        state->f.c = 0;
+        break;
+    }
+    case 0xb6: { // or [hl]
+        state->a = state->a | state->memory[state->hl];
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 0;
+        state->f.c = 0;
+        cycles = 2;
+        break;
+    }
+    case 0xb7: { // or a
+        state->a = state->a;
+        if (state->a){
+            state->f.z = 0;
+        } else {
+            state->f.z = 1;
+        }
+        state->f.h = 0;
+        state->f.h = 0;
+        state->f.c = 0;
+        break;
+    }
+
 
     case 0xc3: { // jp a16
         state->pc = ((opcode[2]<<8)|opcode[1]);
