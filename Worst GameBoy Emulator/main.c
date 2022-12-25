@@ -1894,7 +1894,115 @@ int EmulateGBOp(StateGB* state)
         state->f.c = 0;
         break;
     }
+    case 0xb8: { // cp b
+        uint16_t answer = state->a - state->b;
+        if (answer == 0) {
+            state->f.z = 1;
+        } else {            
+            state->f.z = 0;
+        }
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer && 0xff) != 0);
+        break;
+      }
+    }
+    case 0xb9: { // cp c
+        uint16_t answer = state->a - state->c;
+        if (answer == 0) {
+            state->f.z = 1;
+        } else {            
+            state->f.z = 0;
+        }
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer && 0xff) != 0);
+        break;
+      }
+    }
+    case 0xba: { // cp d
+        uint16_t answer = state->a - state->d;
+        if (answer == 0) {
+            state->f.z = 1;
+        } else {            
+            state->f.z = 0;
+        }
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer && 0xff) != 0);
+        break;
+      }
+    }
+    case 0xbb: { // cp e
+        uint16_t answer = state->a - state->e;
+        if (answer == 0) {
+            state->f.z = 1;
+        } else {            
+            state->f.z = 0;
+        }
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer && 0xff) != 0);
+        break;
+      }
+    }
+    case 0xbc: { // cp h
+        uint16_t answer = state->a - state->h;
+        if (answer == 0) {
+            state->f.z = 1;
+        } else {            
+            state->f.z = 0;
+        }
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer && 0xff) != 0);
+        break;
+      }
+    }
+    case 0xbd: { // cp l
+        uint16_t answer = state->a - state->l;
+        if (answer == 0) {
+            state->f.z = 1;
+        } else {            
+            state->f.z = 0;
+        }
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer && 0xff) != 0);
+        break;
+      }
+    }
+    case 0xbe: { // cp [hl]
+        uint16_t answer = state->a - state->memory[state->hl];
+        if (answer == 0) {
+            state->f.z = 1;
+        } else {            
+            state->f.z = 0;
+        }
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer && 0xff) != 0);
+        cycles = 2;
+        break;
+      }
+    }
+    case 0xbf: { //TODO: optimise     cp a 
+        uint16_t answer = state->a - state->a;
+        if (answer == 0) {
+            state->f.z = 1;
+        } else {            
+            state->f.z = 0;
+        }
+        state->f.n = 1;
+        state->f.h = ((answer & 0x10) == 0);
+        state->f.c = ((answer && 0xff) != 0);
+        break;
+      }
+    }
 
+    case 0xc0: { // ret nz
+
+           }
 
     case 0xc3: { // jp a16
         state->pc = ((opcode[2]<<8)|opcode[1]);
@@ -1906,7 +2014,7 @@ int EmulateGBOp(StateGB* state)
         break;
     }
     }
-    printf("\tZ=%d,N=%d,H=%d,C=%d\n", state->f.z, state->f.n, state->f.h, state->f.c);
+    printf("\tZ=%d,N=%d,H=%d,C=%d\n", state->f.z, state->f.n, state->f.h, state->f);
     printf("\tA $%02x B $%02x C $%02x D $%02x E $%02x H $%02x L $%02x SP %04x\n",
            state->a, state->b, state->c, state->d,
            state->e, state->h, state->l, state->sp);
