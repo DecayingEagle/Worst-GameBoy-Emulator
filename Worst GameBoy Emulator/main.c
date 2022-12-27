@@ -1903,9 +1903,8 @@ int EmulateGBOp(StateGB* state)
         }
         state->f.n = 1;
         state->f.h = ((answer & 0x10) == 0);
-        state->f.c = ((answer && 0xff) != 0);
+        state->f.c = ((answer & 0xff) != 0);
         break;
-      }
     }
     case 0xb9: { // cp c
         uint16_t answer = state->a - state->c;
@@ -1916,9 +1915,8 @@ int EmulateGBOp(StateGB* state)
         }
         state->f.n = 1;
         state->f.h = ((answer & 0x10) == 0);
-        state->f.c = ((answer && 0xff) != 0);
+        state->f.c = ((answer & 0xff) != 0);
         break;
-      }
     }
     case 0xba: { // cp d
         uint16_t answer = state->a - state->d;
@@ -1931,7 +1929,6 @@ int EmulateGBOp(StateGB* state)
         state->f.h = ((answer & 0x10) == 0);
         state->f.c = ((answer && 0xff) != 0);
         break;
-      }
     }
     case 0xbb: { // cp e
         uint16_t answer = state->a - state->e;
@@ -1944,7 +1941,6 @@ int EmulateGBOp(StateGB* state)
         state->f.h = ((answer & 0x10) == 0);
         state->f.c = ((answer && 0xff) != 0);
         break;
-      }
     }
     case 0xbc: { // cp h
         uint16_t answer = state->a - state->h;
@@ -1957,7 +1953,6 @@ int EmulateGBOp(StateGB* state)
         state->f.h = ((answer & 0x10) == 0);
         state->f.c = ((answer && 0xff) != 0);
         break;
-      }
     }
     case 0xbd: { // cp l
         uint16_t answer = state->a - state->l;
@@ -1970,7 +1965,6 @@ int EmulateGBOp(StateGB* state)
         state->f.h = ((answer & 0x10) == 0);
         state->f.c = ((answer && 0xff) != 0);
         break;
-      }
     }
     case 0xbe: { // cp [hl]
         uint16_t answer = state->a - state->memory[state->hl];
@@ -1984,7 +1978,6 @@ int EmulateGBOp(StateGB* state)
         state->f.c = ((answer && 0xff) != 0);
         cycles = 2;
         break;
-      }
     }
     case 0xbf: { //TODO: optimise     cp a 
         uint16_t answer = state->a - state->a;
@@ -1995,14 +1988,17 @@ int EmulateGBOp(StateGB* state)
         }
         state->f.n = 1;
         state->f.h = ((answer & 0x10) == 0);
-        state->f.c = ((answer && 0xff) != 0);
+        state->f.c = ((answer & 0xff) != 0);
         break;
-      }
     }
 
     case 0xc0: { // ret nz
+        if (!state->f.z) {
+            //return to the return address
 
-           }
+        }
+        break;
+    }
 
     case 0xc3: { // jp a16
         state->pc = ((opcode[2]<<8)|opcode[1]);

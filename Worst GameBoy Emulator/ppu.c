@@ -1,8 +1,0 @@
-//
-// Created by roza0 on 12/27/2022.
-//
-
-#ifndef WORST_GAMEBOY_EMULATOR_PPU_H
-#define WORST_GAMEBOY_EMULATOR_PPU_H
-
-#endif //WORST_GAMEBOY_EMULATOR_PPU_H
