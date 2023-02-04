@@ -614,10 +614,33 @@ typedef struct StateGB {
     uint16_t    sp;
     uint16_t    pc;
     uint8_t* memory;
-    uint8_t* ram;
     bool sysClkActive;
     bool mainClkActive;
 } StateGB;
+
+typedef struct mmu_t
+    {
+        uint8_t bios[0x100];
+        struct {
+            union {
+                uint8_t addr[0x10000];
+
+                struct {
+                    uint8_t rom[2][0x4000];
+                    uint8_t vram[0x2000];
+                    uint8_t eram[0x2000];
+                    uint8_t wram[0x2000];
+                    uint8_t wrams[0x1E00];
+                    uint8_t oam[0xA0];
+                    uint8_t empty[0x60];
+                    uint8_t io[0x40];
+                    uint8_t ppu[0x40];
+                    uint8_t zram[0x80];
+                    uint8_t intenable;
+                };
+            };
+        };
+};
 
 void UnimplementedInstruction(StateGB* state)
 {
@@ -1905,7 +1928,6 @@ int EmulateGBOp(StateGB* state)
         state->f.h = ((answer & 0x10) == 0);
         state->f.c = ((answer && 0xff) != 0);
         break;
-      }
     }
     case 0xb9: { // cp c
         uint16_t answer = state->a - state->c;
@@ -1918,7 +1940,6 @@ int EmulateGBOp(StateGB* state)
         state->f.h = ((answer & 0x10) == 0);
         state->f.c = ((answer && 0xff) != 0);
         break;
-      }
     }
     case 0xba: { // cp d
         uint16_t answer = state->a - state->d;
@@ -1931,7 +1952,6 @@ int EmulateGBOp(StateGB* state)
         state->f.h = ((answer & 0x10) == 0);
         state->f.c = ((answer && 0xff) != 0);
         break;
-      }
     }
     case 0xbb: { // cp e
         uint16_t answer = state->a - state->e;
@@ -1944,7 +1964,6 @@ int EmulateGBOp(StateGB* state)
         state->f.h = ((answer & 0x10) == 0);
         state->f.c = ((answer && 0xff) != 0);
         break;
-      }
     }
     case 0xbc: { // cp h
         uint16_t answer = state->a - state->h;
@@ -1957,7 +1976,6 @@ int EmulateGBOp(StateGB* state)
         state->f.h = ((answer & 0x10) == 0);
         state->f.c = ((answer && 0xff) != 0);
         break;
-      }
     }
     case 0xbd: { // cp l
         uint16_t answer = state->a - state->l;
@@ -1970,7 +1988,6 @@ int EmulateGBOp(StateGB* state)
         state->f.h = ((answer & 0x10) == 0);
         state->f.c = ((answer && 0xff) != 0);
         break;
-      }
     }
     case 0xbe: { // cp [hl]
         uint16_t answer = state->a - state->memory[state->hl];
@@ -1984,7 +2001,6 @@ int EmulateGBOp(StateGB* state)
         state->f.c = ((answer && 0xff) != 0);
         cycles = 2;
         break;
-      }
     }
     case 0xbf: { //TODO: optimise     cp a 
         uint16_t answer = state->a - state->a;
@@ -1997,7 +2013,6 @@ int EmulateGBOp(StateGB* state)
         state->f.h = ((answer & 0x10) == 0);
         state->f.c = ((answer && 0xff) != 0);
         break;
-      }
     }
 
     case 0xc0: { // ret nz
@@ -2047,7 +2062,7 @@ void ReadFileIntoMemoryAt(StateGB* state, char* filename)
     fread(buffer, fsize, 1, f);
     fclose(f);
     state->memory = buffer;
-    state->ram = malloc(0xffff);
+    //state->ram = malloc(0xffff);
 }
 
 int main(int argc, char** argv) {
